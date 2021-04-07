@@ -6,8 +6,9 @@
 
 #include <string>
 
-class NProtocolBase {
- public:
+class NProtocolBase
+{
+public:
   NProtocolBase(bool is_length_knowable, size_t fixed_part_size,
                 const std::initializer_list<uint8_t> &header,
                 const std::initializer_list<uint8_t> &tail = {});
@@ -21,22 +22,24 @@ class NProtocolBase {
 
   std::string fixed_tail() const { return fixed_tail_; }
 
- protected:
+protected:
   virtual bool UpdateLength(const uint8_t *data, size_t availableBytes);
 
   virtual bool Verify(const uint8_t *data);
 
   virtual void HandleData(const uint8_t *data) = 0;
 
-  bool set_length(size_t length) {
-    if (length < fixed_part_size_) {
+  bool set_length(size_t length)
+  {
+    if (length < fixed_part_size_)
+    {
       return false;
     }
     length_ = length;
     return true;
   }
 
- private:
+private:
   bool is_length_knowable_;
   const size_t fixed_part_size_;
   size_t length_;
@@ -46,4 +49,4 @@ class NProtocolBase {
   friend class NProtocolExtracter;
 };
 
-#endif  // NPROTOCOL_BASE_H
+#endif // NPROTOCOL_BASE_H

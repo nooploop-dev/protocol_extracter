@@ -9,11 +9,13 @@
  *
  * @param protocol
  */
-void NProtocolExtracter::AddProtocol(NProtocolBase *protocol) {
+void NProtocolExtracter::AddProtocol(NProtocolBase *protocol)
+{
   assert(std::find(protocols_.begin(), protocols_.end(), protocol) ==
          protocols_.end());
   protocols_.push_back(protocol);
-  if (protocol->fixed_header().size() > max_header_size_) {
+  if (protocol->fixed_header().size() > max_header_size_)
+  {
     max_header_size_ = protocol->fixed_header().size();
   }
 }
@@ -23,14 +25,17 @@ void NProtocolExtracter::AddProtocol(NProtocolBase *protocol) {
  *
  * @param protocol
  */
-void NProtocolExtracter::RemoveProtocol(NProtocolBase *protocol) {
+void NProtocolExtracter::RemoveProtocol(NProtocolBase *protocol)
+{
   auto index = std::find(protocols_.begin(), protocols_.end(), protocol);
   assert(index != protocols_.end());
   protocols_.erase(index);
 
   int max_size = 0;
-  for (auto p : protocols_) {
-    if (p->fixed_header().size() > max_size) {
+  for (auto p : protocols_)
+  {
+    if (p->fixed_header().size() > max_size)
+    {
       max_size = p->fixed_header().size();
     }
   }
@@ -44,17 +49,21 @@ void NProtocolExtracter::RemoveProtocol(NProtocolBase *protocol) {
  * @param data
  * @param data_length
  */
-void NProtocolExtracter::AddNewData(const uint8_t *data, size_t data_length) {
+void NProtocolExtracter::AddNewData(const uint8_t *data, size_t data_length)
+{
   AddNewData(std::string(reinterpret_cast<const char *>(data), data_length));
 }
 
-struct SortInfo {
+struct SortInfo
+{
   NProtocolBase *protocol;
   size_t header_index;
 };
 
-void NProtocolExtracter::AddNewData(const std::string &data) {
-  if (data.empty()) return;
+void NProtocolExtracter::AddNewData(const std::string &data)
+{
+  if (data.empty())
+    return;
 
   auto data_array = prev_data_array_ + data;
   prev_data_array_.clear();
@@ -64,18 +73,22 @@ void NProtocolExtracter::AddNewData(const std::string &data) {
 
   //提取帧头
   std::vector<SortInfo> sort_infos;
-  for (size_t i = 0; i < protocols_.size(); ++i) {
+  for (size_t i = 0; i < protocols_.size(); ++i)
+  {
     auto protocol = protocols_.at(i);
 
     const auto &fixed_header = protocol->fixed_header();
 
     auto header_index = -fixed_header.size();
-    for (;;) {
+    for (;;)
+    {
       header_index =
           data_array.find(fixed_header, header_index + fixed_header.size());
-      if (header_index != std::string::npos) {
+      if (header_index != std::string::npos)
+      {
         sort_infos.push_back(SortInfo{protocol, header_index});
-      } else
+      }
+      else
         break;
     }
   }
@@ -83,8 +96,10 @@ void NProtocolExtracter::AddNewData(const std::string &data) {
   std::sort(sort_infos.begin(), sort_infos.end(), [](SortInfo a, SortInfo b) {
     if (a.header_index < b.header_index)
       return true;
-    else if (a.header_index == b.header_index) {
-      if (a.protocol->length() < b.protocol->length()) {
+    else if (a.header_index == b.header_index)
+    {
+      if (a.protocol->length() < b.protocol->length())
+      {
         return true;
       }
     }
@@ -94,35 +109,46 @@ void NProtocolExtracter::AddNewData(const std::string &data) {
   //表示需要处理的数据位置
   int index_begin = 0;
 
-  for (const auto &sort_info : sort_infos) {
+  for (const auto &sort_info : sort_infos)
+  {
     auto header_index = sort_info.header_index;
-    if (header_index < index_begin) continue;
+    if (header_index < index_begin)
+      continue;
     auto protocol = sort_info.protocol;
     auto data_begin =
         reinterpret_cast<const uint8_t *>(data_array.data()) + header_index;
     auto available_bytes = data_array.size() - header_index;
-    if (protocol->is_length_knowable()) {
+    if (protocol->is_length_knowable())
+    {
       //绝大部分协议都长度可知，变长协议也可通过协议中表示长度的部分计算获取
-      if (!protocol->UpdateLength(data_begin, available_bytes)) {
-        if (incomplete_index == data_array.size()) {
+      if (!protocol->UpdateLength(data_begin, available_bytes))
+      {
+        if (incomplete_index == data_array.size())
+        {
           incomplete_index = header_index;
         }
         continue;
       }
-      if (available_bytes < protocol->length()) {
-        if (incomplete_index == data_array.size()) {
+      if (available_bytes < protocol->length())
+      {
+        if (incomplete_index == data_array.size())
+        {
           incomplete_index = header_index;
         }
         continue;
       }
-    } else {
+    }
+    else
+    {
       //对于nmea类型协议，仅依靠固定的帧头及帧尾进行判断，直到找到帧尾才可知当前帧实际长度
       auto fixed_header = protocol->fixed_header();
       auto fixed_tail = protocol->fixed_tail();
       auto tail_index =
           data_array.find(fixed_tail, header_index + fixed_header.size());
-      if (tail_index == std::string::npos) {
-        if (incomplete_index == data_array.size()) {
+      if (tail_index == std::string::npos)
+      {
+        if (incomplete_index == data_array.size())
+        {
           incomplete_index = header_index;
         }
         continue;
@@ -131,7 +157,8 @@ void NProtocolExtracter::AddNewData(const std::string &data) {
     }
 
     //协议校验
-    if (!protocol->Verify(data_begin)) {
+    if (!protocol->Verify(data_begin))
+    {
       continue;
     }
     //处理协议数据
@@ -145,13 +172,19 @@ void NProtocolExtracter::AddNewData(const std::string &data) {
   // std::cout << "data_array.size(): " << data_array.size() << "\n";
 
   //处理末尾数据，视情况需要保留到下一次计算
-  if (incomplete_index + max_header_size_ - 1 <= data_array.size()) {
+  if (incomplete_index + max_header_size_ - 1 <= data_array.size())
+  {
     prev_data_array_ = data_array.substr(incomplete_index);
-  } else {
-    if (index_begin + max_header_size_ - 1 <= data_array.size()) {
+  }
+  else
+  {
+    if (index_begin + max_header_size_ - 1 <= data_array.size())
+    {
       prev_data_array_ =
           data_array.substr(data_array.size() + 1 - max_header_size_);
-    } else {
+    }
+    else
+    {
       prev_data_array_ = data_array.substr(index_begin);
     }
   }

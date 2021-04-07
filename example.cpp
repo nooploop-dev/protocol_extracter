@@ -6,32 +6,37 @@
 
 using namespace std;
 
-class ProtocolUser : public NProtocolBase {
- public:
+class ProtocolUser : public NProtocolBase
+{
+public:
   ProtocolUser();
 
- protected:
+protected:
   bool Verify(const uint8_t *data) override;
   void HandleData(const uint8_t *data) override;
 };
 
 ProtocolUser::ProtocolUser() : NProtocolBase(true, 5, {0x77}) {}
 
-bool ProtocolUser::Verify(const uint8_t *data) {
+bool ProtocolUser::Verify(const uint8_t *data)
+{
   uint8_t sum = 0;
   return data[length() - 1] ==
          accumulate(data, data + length() - sizeof(sum), sum);
 }
 
-void ProtocolUser::HandleData(const uint8_t *data) {
+void ProtocolUser::HandleData(const uint8_t *data)
+{
   cout << "Protocol data extract successfully: \n";
-  for (int i = 0; i < length(); ++i) {
+  for (int i = 0; i < length(); ++i)
+  {
     cout << hex << setfill('0') << setw(2) << (int)data[i] << " ";
   }
   cout << endl;
 }
 
-int main(int, char **) {
+int main(int, char **)
+{
   NProtocolExtracter extracter;
 
   /**

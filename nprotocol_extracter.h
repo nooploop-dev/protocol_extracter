@@ -6,8 +6,9 @@
 
 #include "nprotocol_base.h"
 
-class NProtocolExtracter {
- public:
+class NProtocolExtracter
+{
+public:
   void AddProtocol(NProtocolBase *protocol);
 
   void RemoveProtocol(NProtocolBase *protocol);
@@ -16,7 +17,7 @@ class NProtocolExtracter {
 
   void AddNewData(const std::string &data);
 
- private:
+private:
   std::vector<NProtocolBase *> protocols_;
 
   std::string prev_data_array_;
@@ -24,4 +25,4 @@ class NProtocolExtracter {
   int max_header_size_ = 0;
 };
 
-#endif  // NPROTOCOL_EXTRACTER_H
+#endif // NPROTOCOL_EXTRACTER_H
