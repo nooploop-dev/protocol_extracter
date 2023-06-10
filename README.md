@@ -24,5 +24,3 @@ Protocol Extracter 是一个通用的数据协议帧提取器，对协议实现�
 ## License
 
 源码基于[BSD 3-Clause license](LICENSE)发布
-
-

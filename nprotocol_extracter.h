@@ -6,8 +6,7 @@
 
 #include "nprotocol_base.h"
 
-class NProtocolExtracter
-{
+class NProtocolExtracter {
 public:
   void AddProtocol(NProtocolBase *protocol);
 

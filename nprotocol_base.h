@@ -6,8 +6,7 @@
 
 #include <string>
 
-class NProtocolBase
-{
+class NProtocolBase {
 public:
   NProtocolBase(bool is_length_knowable, size_t fixed_part_size,
                 const std::initializer_list<uint8_t> &header,
@@ -29,10 +28,8 @@ protected:
 
   virtual void HandleData(const uint8_t *data) = 0;
 
-  bool set_length(size_t length)
-  {
-    if (length < fixed_part_size_)
-    {
+  bool set_length(size_t length) {
+    if (length < fixed_part_size_) {
       return false;
     }
     length_ = length;

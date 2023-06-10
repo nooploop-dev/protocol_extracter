@@ -24,5 +24,3 @@ Refer to [example.cpp](./example.cpp) to get start
 ## License
 
 The source code is released under a [BSD 3-Clause license](LICENSE).
-
-
